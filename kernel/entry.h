@@ -1,0 +1,1 @@
+#define STACK0_SIZE 0x1000
