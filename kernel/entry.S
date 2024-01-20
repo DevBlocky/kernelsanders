@@ -16,26 +16,27 @@ _start:
     // add quick and dirty trap for debugging
     // if an exception/interrupt happens before being setup
     // in supervisor mode, then it'll be redirected to _trap
-    la a0, _trap
+    la a0, _trapearly
     csrw mtvec, a0
     csrw stvec, a0
 
     // if mhartid != 0, spin core (we only want to use one core)
     csrr tp, mhartid
-    bnez tp, .L_spin
+    bnez tp, _spin
 
     // a1 contains the address of the dtb, provided by qemu
     // mv to a0 so that it's a parameter of mstart
     mv a0, a1
     call mstart
 
-.L_spin:
-    j .L_spin
+.globl _spin
+_spin:
+    j _spin
 
 .align 4
-_trap:
-    la a0, .L_trap_panicmsg
+_trapearly:
+    la a0, .L_panicmsg
     call panic
-
-.L_trap_panicmsg:
+    j _spin
+.L_panicmsg:
     .string "_trap hit unexpectedly"

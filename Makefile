@@ -4,6 +4,7 @@ OBJS = \
 	$K/entry.o \
 	$K/mstart.o \
 	$K/main.o \
+	$K/traptimer.o \
 	$K/printf.o \
 	$K/pci.o \
 	$K/vga.o \

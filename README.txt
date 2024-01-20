@@ -10,6 +10,9 @@ based on xv6). And maybe it will display a video instead of an
 image. But for now, this rudimentary bare-metal program displays 
 an image of Colonel Sanders.
 
+This system takes heavy influence from:
+https://github.com/mit-pdos/xv6-riscv
+
 TO RUN:
 make qemu
 
