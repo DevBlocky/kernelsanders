@@ -6,4 +6,5 @@
 *.o
 *.d
 *.asm
-kernel/kernel.elf
+*codegen.c
+/kernel/kernel.elf

@@ -8,7 +8,7 @@ OBJS = \
 	$K/printf.o \
 	$K/pci.o \
 	$K/vga.o \
-	$K/picturedata.o
+	$K/picturedata_codegen.o
 LDSCRIPT = $K/kernel.ld
 OUTELF = $K/kernel.elf
 
@@ -35,15 +35,18 @@ $(OUTELF): $(LDSCRIPT) $(OBJS)
 	$(LD) $(LDFLAGS) -T $< -o $@ $(OBJS)
 	$(OBJDUMP) -S $@ > $@.asm
 
+$K/picturedata_codegen.c: colonel.jpg
+	magick convert $< -resize 640x480\! BGRA:- | xxd -i -n picturedata > $@
+
 objdump: $(OUTELF)
 	$(OBJDUMP) -d $< > $<.asm
 
 
 clean:
-	rm -f */*.o */*.d */*.asm $(OUTELF) $(OUTBIN)
+	rm -f */*.o */*.d */*.asm */*codegen.c $(OUTELF) $(OUTBIN)
 
 qemu: $(OUTELF)
-	@echo "use CTRL+A X to exit" 1>&2
+# @echo "use CTRL+A X to exit" 1>&2
 	$(QEMU) $(QEMUOPTS)
 
 qemu-gdb: $(OUTELF)
