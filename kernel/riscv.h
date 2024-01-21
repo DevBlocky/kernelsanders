@@ -26,47 +26,47 @@
 static inline usize_t r_mstatus()
 {
     usize_t status;
-    asm("csrr %0, mstatus" : "=r"(status));
+    asm volatile("csrr %0, mstatus" : "=r"(status));
     return status;
 }
 static inline void w_mstatus(usize_t mstatus)
 {
-    asm("csrw mstatus, %0" : : "r"(mstatus));
+    asm volatile("csrw mstatus, %0" : : "r"(mstatus));
 }
 
 static inline void w_mtvec(usize_t vector)
 {
-    asm("csrw mtvec, %0" : : "r"(vector));
+    asm volatile("csrw mtvec, %0" : : "r"(vector));
 }
 static inline void w_mepc(usize_t addr)
 {
-    asm("csrw mepc, %0" : : "r"(addr));
+    asm volatile("csrw mepc, %0" : : "r"(addr));
 }
 static inline void w_mie(usize_t flags)
 {
-    asm("csrw mie, %0" : : "r"(flags));
+    asm volatile("csrw mie, %0" : : "r"(flags));
 }
 static inline void w_mscratch(usize_t any)
 {
-    asm("csrw mscratch, %0" : : "r"(any));
+    asm volatile("csrw mscratch, %0" : : "r"(any));
 }
 
 static inline void w_mideleg(usize_t flags)
 {
-    asm("csrw mideleg, %0" : : "r"(flags));
+    asm volatile("csrw mideleg, %0" : : "r"(flags));
 }
 static inline void w_medeleg(usize_t flags)
 {
-    asm("csrw medeleg, %0" : : "r"(flags));
+    asm volatile("csrw medeleg, %0" : : "r"(flags));
 }
 
 static inline void w_pmpaddr0(usize_t addr)
 {
-    asm("csrw pmpaddr0, %0" : : "r"(addr));
+    asm volatile("csrw pmpaddr0, %0" : : "r"(addr));
 }
 static inline void w_pmpcfg0(usize_t cfg)
 {
-    asm("csrw pmpcfg0, %0" : : "r"(cfg));
+    asm volatile("csrw pmpcfg0, %0" : : "r"(cfg));
 }
 
 //
@@ -81,37 +81,37 @@ static inline void w_pmpcfg0(usize_t cfg)
 static inline usize_t r_sstatus()
 {
     usize_t status;
-    asm("csrr %0, sstatus" : "=r"(status));
+    asm volatile("csrr %0, sstatus" : "=r"(status));
     return status;
 }
 static inline void w_sstatus(usize_t status)
 {
-    asm("csrw sstatus, %0" : : "r"(status));
+    asm volatile("csrw sstatus, %0" : : "r"(status));
 }
 
 static inline void w_stvec(usize_t addr)
 {
-    asm("csrw stvec, %0" : : "r"(addr));
+    asm volatile("csrw stvec, %0" : : "r"(addr));
 }
 static inline void w_sie(usize_t flags)
 {
-    asm("csrw sie, %0" : : "r"(flags));
+    asm volatile("csrw sie, %0" : : "r"(flags));
 }
 static inline usize_t r_sip()
 {
     usize_t flags;
-    asm("csrr %0, sip" : "=r"(flags));
+    asm volatile("csrr %0, sip" : "=r"(flags));
     return flags;
 }
 static inline void w_sip(usize_t flags)
 {
-    asm("csrw sip, %0" : : "r"(flags));
+    asm volatile("csrw sip, %0" : : "r"(flags));
 }
 
 static inline usize_t r_scause()
 {
     usize_t code;
-    asm("csrr %0, scause" : "=r"(code));
+    asm volatile("csrr %0, scause" : "=r"(code));
     return code;
 }
 

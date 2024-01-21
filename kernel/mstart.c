@@ -2,7 +2,7 @@
 #include "types.h"
 #include "riscv.h"
 
-void timerinit(void);
+static void timerinit(void);
 void main(void);
 
 __attribute__((aligned(16))) char stack0[STACK0_SIZE];
@@ -45,7 +45,7 @@ uint64_t timerscratch[5];
 //
 // once a timer interrupt is taken, we pass a software interrupt
 // to supervisor mode
-void timerinit(void) {
+static void timerinit(void) {
     uint64_t interval = 1000000;
     *CLINT_MTIMECMP = *CLINT_MTIME + interval;
 
