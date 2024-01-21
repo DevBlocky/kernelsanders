@@ -1,12 +1,11 @@
 #include "printf.h"
 #include <stdarg.h>
 #include "types.h"
-
-#define UART0 ((char *)0x10000000)
+#include "riscv.h"
 
 static void uartputc(char c)
 {
-    *UART0 = c;
+    *(volatile char *)UART0 = c;
 }
 static void uartputs(const char *s)
 {

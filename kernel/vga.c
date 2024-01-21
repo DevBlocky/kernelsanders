@@ -12,7 +12,7 @@
 #define VGAIO(reg) (VGA_MMIO + reg + (0x400 - 0x3c0))
 #define BOCHSIO(idx) (volatile uint16_t *)(VGA_MMIO + 0x500 + (idx << 1))
 
-void initvga(void)
+void vgainit(void)
 {
     volatile struct pci_device *device;
     struct pci_iterator iter;
@@ -39,6 +39,7 @@ void initvga(void)
     printf("bochs display initialized\n");
 }
 
-void vga_lset(usize_t i, uint8_t data) {
+void vga_lset(usize_t i, uint8_t data)
+{
     VGA_FB[i] = data;
 }

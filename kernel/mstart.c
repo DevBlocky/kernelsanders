@@ -7,13 +7,6 @@ void main(void);
 
 __attribute__((aligned(16))) char stack0[STACK0_SIZE];
 
-#define CLINT 0x2000000
-// for some reason, the locations of these aren't documented well
-// I only found this at section 6.1:
-// https://sifive.cdn.prismic.io/sifive%2Fc89f6e5a-cf9e-44c3-a3db-04420702dcc1_sifive+e31+manual+v19.08.pdf
-#define CLINT_MTIMECMP (volatile uint64_t*)(CLINT + 0x4000)
-#define CLINT_MTIME (volatile uint64_t*)(CLINT + 0xBFF8)
-
 void mstart(char *dtb)
 {
     // GOAL: get out of machine mode asap
@@ -43,7 +36,7 @@ void mstart(char *dtb)
 }
 
 
-extern void _traptimer();
+void _traptimer();
 uint64_t timerscratch[5];
 
 // since the CLINT can only produce machine-mode interrupts,
@@ -66,6 +59,6 @@ void timerinit(void) {
 
     // setup interrupt handler
     w_mtvec((uint64_t)_traptimer);
-    w_mstatus(r_mstatus() | MSTATUS_MPIE);
     w_mie(MIE_MTIE);
+    w_mstatus(r_mstatus() | MSTATUS_MPIE);
 }

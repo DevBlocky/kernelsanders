@@ -2,10 +2,12 @@ K=kernel
 
 OBJS = \
 	$K/entry.o \
+	$K/traptimer.o \
+	$K/trapkernel.o \
 	$K/mstart.o \
 	$K/main.o \
-	$K/traptimer.o \
 	$K/printf.o \
+	$K/trap.o \
 	$K/pci.o \
 	$K/vga.o \
 	$K/picturedata_codegen.o

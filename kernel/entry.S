@@ -39,4 +39,4 @@ _trapearly:
     call panic
     j _spin
 .L_panicmsg:
-    .string "_trap hit unexpectedly"
+    .string "_trapearly hit unexpectedly"

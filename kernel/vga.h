@@ -25,7 +25,7 @@
 #define VBE_DISPI_VBE_ENABLED           0x40
 #define VBE_DISPI_NOCLEARMEM            0x80
 
-void initvga(void);
+void vgainit(void);
 void vga_lset(usize_t i, uint8_t data);
 
 #endif // __VGA_H
