@@ -1,6 +1,7 @@
 .extern strap
 
 // traps while running kernel code are taken here
+.section .text._trapkernel
 .globl _trapkernel
 .align 4
 _trapkernel:

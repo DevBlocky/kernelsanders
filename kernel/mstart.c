@@ -45,7 +45,8 @@ uint64_t timerscratch[5];
 //
 // once a timer interrupt is taken, we pass a software interrupt
 // to supervisor mode
-static void timerinit(void) {
+static void timerinit(void)
+{
     uint64_t interval = 1000000;
     *CLINT_MTIMECMP = *CLINT_MTIME + interval;
 

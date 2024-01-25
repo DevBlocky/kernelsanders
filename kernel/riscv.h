@@ -3,14 +3,25 @@
 
 #include "types.h"
 
-#define CLINT 0x2000000
+extern char kstart[];
+extern char ktextend[];
+extern char kend[];
+#define PHYSTOP (kstart + 128 * 1024 * 1024)
+
+#define PGSIZE 4096
+#define PGCEIL(a) (((a) + PGSIZE - 1) & ~(PGSIZE - 1))
+#define PGFLOOR(a) ((a) & ~(PGSIZE - 1))
+
+#define CLINT_MMIO 0x2000000
 // for some reason, the offsets of CLINT registers are not well documented
 // (especially the CLINT_MTIME) I could only find it here (section 6.1):
 // https://sifive.cdn.prismic.io/sifive%2Fc89f6e5a-cf9e-44c3-a3db-04420702dcc1_sifive+e31+manual+v19.08.pdf
-#define CLINT_MTIMECMP (volatile uint64_t *)(CLINT + 0x4000)
-#define CLINT_MTIME (volatile uint64_t *)(CLINT + 0xBFF8)
+#define CLINT_MTIMECMP (volatile uint64_t *)(CLINT_MMIO + 0x4000)
+#define CLINT_MTIME (volatile uint64_t *)(CLINT_MMIO + 0xBFF8)
 
-#define UART0 0x10000000
+#define UART0_MMIO 0x10000000
+
+#define PCI_MMIO 0x30000000
 
 //
 // machine-mode csr registers
@@ -113,6 +124,14 @@ static inline usize_t r_scause()
     usize_t code;
     asm volatile("csrr %0, scause" : "=r"(code));
     return code;
+}
+
+static inline void w_satp(usize_t addr)
+{
+    asm volatile("csrw satp, %0" : : "r"(addr));
+}
+static inline void sfence_vma() {
+    asm volatile("sfence.vma zero, zero");
 }
 
 static inline void intr_on()

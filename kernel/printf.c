@@ -5,7 +5,7 @@
 
 static void uartputc(char c)
 {
-    *(volatile char *)UART0 = c;
+    *(volatile char *)UART0_MMIO = c;
 }
 static void uartputs(const char *s)
 {

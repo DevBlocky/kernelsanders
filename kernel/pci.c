@@ -1,8 +1,7 @@
 #include "pci.h"
 #include "types.h"
+#include "riscv.h"
 #include "printf.h"
-
-#define PCI_MMIO ((volatile void *)0x30000000)
 
 void pci_enum_begin(struct pci_iterator *iter)
 {

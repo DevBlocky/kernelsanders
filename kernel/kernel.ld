@@ -8,11 +8,14 @@ SECTIONS
         this is where qemu will jump to
     */
     . = 0x80000000;
+    PROVIDE(kstart = .);
 
     .text : {
         *(.text._start .text*)
-        . = ALIGN(0x1000);
     }
+
+    . = ALIGN(0x1000);
+    PROVIDE(ktextend = .);
 
     .rodata : {
         . = ALIGN(0x10);
@@ -35,5 +38,5 @@ SECTIONS
         *(.bss*)
     }
     
-    PROVIDE(end = .);
+    PROVIDE(kend = .);
 }

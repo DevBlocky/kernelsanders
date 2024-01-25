@@ -7,6 +7,8 @@ OBJS = \
 	$K/mstart.o \
 	$K/main.o \
 	$K/printf.o \
+	$K/pgalloc.o \
+	$K/vm.o \
 	$K/trap.o \
 	$K/pci.o \
 	$K/vga.o \
@@ -21,7 +23,7 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -O -ggdb \
+CFLAGS = -Wall -O3 -ggdb \
 	-MD -mcmodel=medany -nostdlib \
 	-fno-omit-frame-pointer -fno-stack-protector \
 	-ffreestanding

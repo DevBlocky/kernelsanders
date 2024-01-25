@@ -1,5 +1,7 @@
 #include "types.h"
 #include "printf.h"
+#include "pgalloc.h"
+#include "vm.h"
 #include "trap.h"
 #include "vga.h"
 
@@ -8,6 +10,8 @@
 void main(void)
 {
     printf("kernel sanders is starting...\n");
+    allocinit();
+    kvminit();
     trapinit();
     vgainit();
 

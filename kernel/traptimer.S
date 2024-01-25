@@ -16,7 +16,7 @@ _traptimer:
     sd a3, 16(a0)
 
     // verify this is a timer interrupt
-    // if this is a timer interrupt, mcause == 0x7 + (1 << 63)
+    // if this is a timer interrupt, mcause == 0x7 | (1 << 63)
     li a1, 0x8000000000000007
     csrr a2, mcause
     beq a1, a2, .L_timerintr
