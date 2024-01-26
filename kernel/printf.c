@@ -83,12 +83,3 @@ void printf(const char *format, ...)
         }
     }
 }
-
-void panic(const char *s)
-{
-    // NOTE: if the OS is ever made multi-core, this will
-    // need to panic other cores too
-    printf("\n!!! kernel panic !!!\nmsg: %s\n", s);
-    while (1)
-        ;
-}

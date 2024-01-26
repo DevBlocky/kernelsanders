@@ -2,6 +2,7 @@ K=kernel
 
 OBJS = \
 	$K/entry.o \
+	$K/panic.o \
 	$K/traptimer.o \
 	$K/trapkernel.o \
 	$K/mstart.o \

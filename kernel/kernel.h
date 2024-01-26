@@ -3,9 +3,11 @@
 
 #include "types.h"
 
+// panic.S
+void panic(const char *s);
+
 // printf.c
 void printf(const char *format, ...);
-void panic(const char *s);
 
 // pgalloc.c
 void allocinit(void);
