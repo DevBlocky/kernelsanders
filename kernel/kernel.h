@@ -1,8 +1,49 @@
-#ifndef __VGA_H
-#define __VGA_H
+#ifndef __KERNEL_H
+#define __KERNEL_H
 
 #include "types.h"
 
+// printf.c
+void printf(const char *format, ...);
+void panic(const char *s);
+
+// pgalloc.c
+void allocinit(void);
+void pgfree(void *page);
+void *pgalloc(void);
+void memset(void *ptr, usize_t val, usize_t size);
+
+// vm.c
+void kvminit(void);
+
+// trap.c
+void trapinit(void);
+
+// pci.c
+#define PCI_CMD_IOSPACE  (1 << 0)
+#define PCI_CMD_MEMSPACE (1 << 1)
+
+struct pci_iterator
+{
+    uint16_t bus, slot, func;
+};
+
+__attribute((packed)) struct pci_device
+{
+    // each row = 32bits
+    uint16_t vendor_id, device_id;
+    uint16_t command, status;
+    uint8_t revision_id, prog_if, subclass, class;
+    uint8_t cl_size, l_timer, header_type, bist;
+
+    uint32_t bar[6];
+};
+
+
+void pci_enum_begin(struct pci_iterator *iter);
+BOOL pci_enum_next(struct pci_iterator *iter, volatile struct pci_device **device);
+
+// vga.c
 #define VBE_DISPI_INDEX_ID              0x0
 #define VBE_DISPI_INDEX_XRES            0x1
 #define VBE_DISPI_INDEX_YRES            0x2
@@ -28,4 +69,5 @@
 void vgainit(void);
 void vga_lset(usize_t i, uint8_t data);
 
-#endif // __VGA_H
+#endif // __KERNEL_H
+ 

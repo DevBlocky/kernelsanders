@@ -1,7 +1,5 @@
-#include "pci.h"
-#include "types.h"
+#include "kernel.h"
 #include "riscv.h"
-#include "printf.h"
 
 void pci_enum_begin(struct pci_iterator *iter)
 {

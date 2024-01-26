@@ -1,6 +1,5 @@
-#include "printf.h"
+#include "kernel.h"
 #include <stdarg.h>
-#include "types.h"
 #include "riscv.h"
 
 static void uartputc(char c)

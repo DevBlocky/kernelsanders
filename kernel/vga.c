@@ -1,9 +1,4 @@
-// driver for the qemu bochs-display device
-
-#include "vga.h"
-#include "types.h"
-#include "pci.h"
-#include "printf.h"
+#include "kernel.h"
 
 // both of these must fit to uint32_t space because of PCI BARs
 #define VGA_FB ((volatile uint8_t *)0x40000000)

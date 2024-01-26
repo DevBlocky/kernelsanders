@@ -1,6 +1,5 @@
-#include "types.h"
+#include "kernel.h"
 #include "riscv.h"
-#include "printf.h"
 
 struct run
 {

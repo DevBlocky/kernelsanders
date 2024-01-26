@@ -1,4 +1,4 @@
-#include "printf.h"
+#include "kernel.h"
 #include "riscv.h"
 
 uint64_t ticks;

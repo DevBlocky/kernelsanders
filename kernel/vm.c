@@ -1,8 +1,5 @@
-#include "vm.h"
-#include "types.h"
+#include "kernel.h"
 #include "riscv.h"
-#include "pgalloc.h"
-#include "printf.h"
 
 typedef uint64_t *pagetable_t;
 typedef uint64_t pte_t;
