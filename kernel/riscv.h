@@ -19,9 +19,11 @@ extern char kend[];
 #define CLINT_MTIMECMP (volatile uint64_t *)(CLINT_MMIO + 0x4000)
 #define CLINT_MTIME (volatile uint64_t *)(CLINT_MMIO + 0xBFF8)
 
-#define UART0_MMIO 0x10000000
+#define PLIC_MMIO 0xc000000UL
 
-#define PCI_MMIO 0x30000000
+#define UART0_MMIO 0x10000000UL
+
+#define PCI_MMIO 0x30000000UL
 
 //
 // machine-mode csr registers
@@ -88,6 +90,7 @@ static inline void w_pmpcfg0(usize_t cfg)
 
 #define SIP_SSIP (1 << 1)
 #define SIE_SSIE (1 << 1)
+#define SIE_SEIE (1 << 9)
 
 static inline usize_t r_sstatus()
 {

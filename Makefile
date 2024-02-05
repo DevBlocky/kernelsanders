@@ -24,15 +24,14 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -O3 -ggdb \
+CFLAGS = -Wall -Ofast -ggdb \
 	-MD -mcmodel=medany -nostdlib \
-	-fno-omit-frame-pointer -fno-stack-protector \
 	-ffreestanding
 
 
 QEMU = qemu-system-riscv64
 QEMUOPTS = -M virt -bios none -kernel $(OUTELF) -m 128M -smp 1 \
-	-device bochs-display -serial stdio
+	-device VGA -serial stdio
 
 elf: $(OUTELF)
 
@@ -41,22 +40,22 @@ $(OUTELF): $(LDSCRIPT) $(OBJS)
 	$(OBJDUMP) -S $@ > $@.asm
 
 $K/picturedata_codegen.c: colonel.jpg
-	magick convert $< -resize 640x480\! BGRA:- | xxd -i -n picturedata > $@
+	magick convert $< -resize 640x480\! BGR:- | xxd -i -n picturedata > $@
 
 objdump: $(OUTELF)
-	$(OBJDUMP) -d $< > $<.asm
+	$(OBJDUMP) -M no-aliases -d $< > $<.asm
 
 
 clean:
 	rm -f */*.o */*.d */*.asm */*codegen.c $(OUTELF) $(OUTBIN)
 
 qemu: $(OUTELF)
-# @echo "use CTRL+A X to exit" 1>&2
 	$(QEMU) $(QEMUOPTS)
 
 qemu-gdb: $(OUTELF)
 	@echo "use 'gdb' in another terminal"
 	$(QEMU) $(QEMUOPTS) -S -s
 
-dumpdtb:
+qemu-dtc:
 	$(QEMU) $(QEMUOPTS) -machine dumpdtb=qemu.dtb
+	dtc qemu.dtb > qemu.dtc

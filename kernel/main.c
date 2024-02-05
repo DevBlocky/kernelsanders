@@ -1,21 +1,21 @@
 #include "kernel.h"
+#include "riscv.h"
 #include "picturedata.h"
-
-extern int alloc;
 
 void main(void)
 {
+    uartinit(); // must init serial before any printf
     printf("kernel sanders is starting...\n");
     allocinit();
     kvminit();
     trapinit();
     vgainit();
 
-    for (usize_t i = 0; i < picturedata_len; i++)
-        vga_lset(i, picturedata[i]);
+    vgasetfb(picturedata, picturedata_len);
 
-    printf("KiB used: %u\n", alloc * 4);
+    printf("clock: %p\n", *CLINT_MTIME);
+    printf("KiB used:  %u\n", alloc * 4);
+    printf("KiB avail: %u\n", allocmax * 4);
 
-    while (1)
-        asm("wfi");
+    panic("main return");
 }

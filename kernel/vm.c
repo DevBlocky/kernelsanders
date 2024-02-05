@@ -45,7 +45,7 @@ pte_t *vmwalk(pagetable_t tbl, usize_t vaddr, BOOL alloc)
         else
         {
             if (!alloc || !(tbl = (pagetable_t)pgalloc()))
-                return 0;
+                return NULL;
             memset(tbl, 0, PGSIZE);
             *pte = pa2pte((usize_t)tbl) | PTE_V;
         }
@@ -96,11 +96,18 @@ void kvminit(void)
     // give r/w to rest of RAM
     kvmmap((usize_t)ktextend, (usize_t)ktextend, (usize_t)(PHYSTOP - ktextend), PTE_R | PTE_W);
 
+    // mmio virutal memory regions
+    // clint
+    kvmmap(CLINT_MMIO, CLINT_MMIO, 0x10000, PTE_R);
+    // plic
+    kvmmap(PLIC_MMIO, PLIC_MMIO, 0x600000, PTE_R | PTE_W);
     // serial io
     kvmmap(UART0_MMIO, UART0_MMIO, PGSIZE, PTE_R | PTE_W);
     // pci mmio config
-    kvmmap(PCI_MMIO, PCI_MMIO, 0x10000000, PTE_R | PTE_W);
+    kvmmap(PCI_MMIO, PCI_MMIO, 0x10000, PTE_R | PTE_W);
     // vga fb and mmio
+    // ? assigning custom mmio region maps should be moved to a separate function
+    // ? since vga.c determines the mmio address for the graphics card
     kvmmap(0x40000000, 0x40000000, 16 * 1024 * 1024 + PGSIZE, PTE_R | PTE_W);
 
     kvmuse();

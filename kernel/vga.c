@@ -1,15 +1,37 @@
 #include "kernel.h"
 
+#define VBE_DISPI_INDEX_ID 0x0
+#define VBE_DISPI_INDEX_XRES 0x1
+#define VBE_DISPI_INDEX_YRES 0x2
+#define VBE_DISPI_INDEX_BPP 0x3
+#define VBE_DISPI_INDEX_ENABLE 0x4
+#define VBE_DISPI_INDEX_BANK 0x5
+#define VBE_DISPI_INDEX_VIRT_WIDTH 0x6
+#define VBE_DISPI_INDEX_VIRT_HEIGHT 0x7
+#define VBE_DISPI_INDEX_X_OFFSET 0x8
+#define VBE_DISPI_INDEX_Y_OFFSET 0x9
+
+#define VBE_DISPI_ID0 0xB0C0
+#define VBE_DISPI_ID1 0xB0C1
+#define VBE_DISPI_ID2 0xB0C2
+#define VBE_DISPI_ID3 0xB0C3
+#define VBE_DISPI_ID4 0xB0C4
+
+#define VBE_DISPI_DISABLED 0x00
+#define VBE_DISPI_ENABLED 0x01
+#define VBE_DISPI_VBE_ENABLED 0x40
+#define VBE_DISPI_NOCLEARMEM 0x80
+
 // both of these must fit to uint32_t space because of PCI BARs
 #define VGA_FB ((volatile uint8_t *)0x40000000)
 #define VGA_MMIO (VGA_FB + (16 * 1024 * 1024))
 
-#define VGAIO(reg) (VGA_MMIO + reg + (0x400 - 0x3c0))
-#define BOCHSIO(idx) (volatile uint16_t *)(VGA_MMIO + 0x500 + (idx << 1))
+#define VGAIO(reg) (VGA_MMIO + (reg) + (0x400 - 0x3c0))
+#define BOCHSIO(idx) (volatile uint16_t *)(VGA_MMIO + 0x500 + ((idx) << 1))
 
 void vgainit(void)
 {
-    volatile struct pci_device *device;
+    pci_device_t device;
     struct pci_iterator iter;
     pci_enum_begin(&iter);
     while (pci_enum_next(&iter, &device) && device->class != 0x3)
@@ -22,19 +44,21 @@ void vgainit(void)
     device->bar[2] = (uint32_t)(uint64_t)VGA_MMIO;
     device->command = PCI_CMD_IOSPACE | PCI_CMD_MEMSPACE;
 
-    // if this is a VGA interface, we need to stop blanking
+    // enable ram and color output
+    *VGAIO(0x3c2) = (1 << 0) | (1 << 1);
+    // stop blanking
     *VGAIO(0x3c0) = 0x20;
 
     // init the display through bochs VBE extensions
-    *BOCHSIO(VBE_DISPI_INDEX_ENABLE) = 0;
+    *BOCHSIO(VBE_DISPI_INDEX_ENABLE) = VBE_DISPI_DISABLED;
     *BOCHSIO(VBE_DISPI_INDEX_XRES) = 640; // width
     *BOCHSIO(VBE_DISPI_INDEX_YRES) = 480; // height
-    *BOCHSIO(VBE_DISPI_INDEX_BPP) = 32;   // bpp
-    *BOCHSIO(VBE_DISPI_INDEX_ENABLE) = VBE_DISPI_ENABLED | VBE_DISPI_VBE_ENABLED | VBE_DISPI_NOCLEARMEM;
-    printf("bochs display initialized\n");
+    *BOCHSIO(VBE_DISPI_INDEX_BPP) = 24;   // bpp
+    *BOCHSIO(VBE_DISPI_INDEX_ENABLE) = VBE_DISPI_ENABLED | VBE_DISPI_VBE_ENABLED;
+    printf("display initialized with bochs VBE\n");
 }
 
-void vga_lset(usize_t i, uint8_t data)
+void vgasetfb(uint8_t *fb, usize_t size)
 {
-    VGA_FB[i] = data;
+    memcpy((uint8_t *)VGA_FB, fb, size);
 }

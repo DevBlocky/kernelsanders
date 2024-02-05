@@ -1,4 +1,4 @@
-.extern panic
+.extern _panic
 .extern _spin
 
 // trap handler for hart timer
@@ -24,8 +24,7 @@ _traptimer:
     // if we reach here, registers don't matter since we're
     // panicking
     la a0, .L_panicmsg
-    call panic
-    j _spin
+    call _panic
 
 .L_timerintr:
     // setup next timer
@@ -47,5 +46,6 @@ _traptimer:
     csrrw a0, mscratch, a0 // swap back a0 and mscratch
     mret
 
+.section .rodata
 .L_panicmsg:
     .string "_traptimer with non-timer cause"

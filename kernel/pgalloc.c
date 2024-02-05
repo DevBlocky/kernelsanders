@@ -6,7 +6,9 @@ struct run
     struct run *next;
 };
 struct run *freelist;
+
 int alloc;
+int allocmax;
 
 // free a page created with pgalloc()
 void pgfree(void *page)
@@ -47,6 +49,7 @@ void allocinit(void)
     for (; p + PGSIZE <= (void *)PHYSTOP; p += PGSIZE, n++)
         pgfree(p);
 
+    allocmax = -alloc;
     alloc = 0;
     printf("mem pages: %u\n", n);
 }
@@ -64,4 +67,14 @@ void memset(void *ptr, usize_t val, usize_t size)
     uint8_t *dst2 = (uint8_t *)dst;
     for (usize_t i = 0; i < size % sizeof(usize_t); i++)
         *dst2++ = ((uint8_t *)&val)[i];
+}
+void memcpy(void *dst, void *src, usize_t size)
+{
+    usize_t *ldst = dst, *lsrc = src;
+    for (usize_t i = 0; i < size / sizeof(usize_t); i++)
+        *ldst++ = *lsrc++;
+
+    uint8_t *sdst = (uint8_t*)ldst, *ssrc = (uint8_t*)lsrc;
+    for (usize_t i = 0; i < size % sizeof(usize_t); i++)
+        *sdst++ = *ssrc++;
 }

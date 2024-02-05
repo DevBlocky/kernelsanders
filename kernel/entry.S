@@ -2,7 +2,7 @@
 
 .extern stack0
 .extern mstart
-.extern panic
+.extern _panic
 
 .section .text._start
 .globl _start
@@ -29,14 +29,17 @@ _start:
     mv a0, a1
     call mstart
 
-.globl _spin
-_spin:
-    j _spin
+    // panic if mstart returns
+    la a0, .L_noretpanic_str
+    call _panic
 
 .align 4
 _trapearly:
-    la a0, .L_panicmsg
-    call panic
-    j _spin
-.L_panicmsg:
+    la a0, .L_trappanic_str
+    call _panic
+
+.section .rodata
+.L_trappanic_str:
     .string "_trapearly hit unexpectedly"
+.L_noretpanic_str:
+    .string "mstart return"

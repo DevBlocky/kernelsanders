@@ -4,16 +4,34 @@
 #include "types.h"
 
 // panic.S
-void panic(const char *s);
+void _panic(const char *s);
+inline static void panic(const char *s)
+{
+    // assembly used to force "call _panic"
+    // otherwise compiler might optimize with "j _panic"
+    // and ra won't contain the calling pc
+    asm(
+        "mv a0, %0\n"
+        "call _panic\n"
+        :
+        : "r"(s)
+        : "a0");
+}
 
 // printf.c
+void uartinit(void);
+void uartintr(void);
 void printf(const char *format, ...);
 
 // pgalloc.c
+extern int alloc;
+extern int allocmax;
+
 void allocinit(void);
 void pgfree(void *page);
 void *pgalloc(void);
 void memset(void *ptr, usize_t val, usize_t size);
+void memcpy(void *dst, void *src, usize_t size);
 
 // vm.c
 void kvminit(void);
@@ -22,7 +40,7 @@ void kvminit(void);
 void trapinit(void);
 
 // pci.c
-#define PCI_CMD_IOSPACE  (1 << 0)
+#define PCI_CMD_IOSPACE (1 << 0)
 #define PCI_CMD_MEMSPACE (1 << 1)
 
 struct pci_iterator
@@ -39,37 +57,17 @@ __attribute((packed)) struct pci_device
     uint8_t cl_size, l_timer, header_type, bist;
 
     uint32_t bar[6];
-};
 
+    uint32_t padd[5];
+    uint8_t intr_line, intr_pin;
+};
+typedef volatile struct pci_device *pci_device_t;
 
 void pci_enum_begin(struct pci_iterator *iter);
-BOOL pci_enum_next(struct pci_iterator *iter, volatile struct pci_device **device);
+BOOL pci_enum_next(struct pci_iterator *iter, pci_device_t *device);
 
 // vga.c
-#define VBE_DISPI_INDEX_ID              0x0
-#define VBE_DISPI_INDEX_XRES            0x1
-#define VBE_DISPI_INDEX_YRES            0x2
-#define VBE_DISPI_INDEX_BPP             0x3
-#define VBE_DISPI_INDEX_ENABLE          0x4
-#define VBE_DISPI_INDEX_BANK            0x5
-#define VBE_DISPI_INDEX_VIRT_WIDTH      0x6
-#define VBE_DISPI_INDEX_VIRT_HEIGHT     0x7
-#define VBE_DISPI_INDEX_X_OFFSET        0x8
-#define VBE_DISPI_INDEX_Y_OFFSET        0x9
-
-#define VBE_DISPI_ID0                   0xB0C0
-#define VBE_DISPI_ID1                   0xB0C1
-#define VBE_DISPI_ID2                   0xB0C2
-#define VBE_DISPI_ID3                   0xB0C3
-#define VBE_DISPI_ID4                   0xB0C4
-
-#define VBE_DISPI_DISABLED              0x00
-#define VBE_DISPI_ENABLED               0x01
-#define VBE_DISPI_VBE_ENABLED           0x40
-#define VBE_DISPI_NOCLEARMEM            0x80
-
 void vgainit(void);
-void vga_lset(usize_t i, uint8_t data);
+void vgasetfb(uint8_t *fb, usize_t size);
 
 #endif // __KERNEL_H
- 
