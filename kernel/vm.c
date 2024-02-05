@@ -1,8 +1,8 @@
 #include "kernel.h"
 #include "riscv.h"
 
-typedef uint64_t *pagetable_t;
-typedef uint64_t pte_t;
+typedef u64 *pagetable_t;
+typedef u64 pte_t;
 
 #define PTE_V (1 << 0)
 #define PTE_R (1 << 1)
@@ -13,17 +13,17 @@ typedef uint64_t pte_t;
 #define SATP_SV39 (8L << 60)
 
 // convert a physical address into a page table entry
-static inline pte_t pa2pte(usize_t pa)
+static inline pte_t pa2pte(usize pa)
 {
-    return (uint64_t)(pa >> 12) << 10;
+    return (pte_t)(pa >> 12) << 10;
 }
 // convert a page table entry into a physical address
-static inline usize_t pte2pa(pte_t pte)
+static inline usize pte2pa(pte_t pte)
 {
-    return (usize_t)(pte >> 10) << 12;
+    return (usize)(pte >> 10) << 12;
 }
 // convert a virtual address into an index in a page table
-static inline usize_t va2idx(usize_t level, usize_t va)
+static inline usize va2idx(usize level, usize va)
 {
     // select the 9-bit level index
     return (va >> (12 + level * 9)) & 0x1ff;
@@ -33,9 +33,9 @@ pagetable_t kpagetable;
 
 // find a leaf entry in a pagetable
 // if alloc == TRUE, allocate required pages
-pte_t *vmwalk(pagetable_t tbl, usize_t vaddr, BOOL alloc)
+pte_t *vmwalk(pagetable_t tbl, usize vaddr, BOOL alloc)
 {
-    for (usize_t level = 2; level > 0; level--)
+    for (usize level = 2; level > 0; level--)
     {
         pte_t *pte = &tbl[va2idx(level, vaddr)];
         if (*pte & PTE_V)
@@ -47,16 +47,16 @@ pte_t *vmwalk(pagetable_t tbl, usize_t vaddr, BOOL alloc)
             if (!alloc || !(tbl = (pagetable_t)pgalloc()))
                 return NULL;
             memset(tbl, 0, PGSIZE);
-            *pte = pa2pte((usize_t)tbl) | PTE_V;
+            *pte = pa2pte((usize)tbl) | PTE_V;
         }
     }
     return &tbl[va2idx(0, vaddr)];
 }
 
 // map a virtual address to a physical address in a pagetable
-int vmmap(pagetable_t tbl, usize_t vaddr, usize_t paddr, usize_t size, int perm)
+int vmmap(pagetable_t tbl, usize vaddr, usize paddr, usize size, int perm)
 {
-    usize_t vaddrend = PGFLOOR(vaddr + size - 1);
+    usize vaddrend = PGFLOOR(vaddr + size - 1);
     vaddr = PGFLOOR(vaddr);
 
     for (; vaddr <= vaddrend; vaddr += PGSIZE, paddr += PGSIZE)
@@ -69,7 +69,7 @@ int vmmap(pagetable_t tbl, usize_t vaddr, usize_t paddr, usize_t size, int perm)
     return 0;
 }
 // map a virtual address for the kernel page table
-void kvmmap(usize_t vaddr, usize_t paddr, usize_t size, int perm)
+void kvmmap(usize vaddr, usize paddr, usize size, int perm)
 {
     if (vmmap(kpagetable, vaddr, paddr, size, perm) != 0)
         panic("kvmmap");
@@ -78,7 +78,7 @@ void kvmmap(usize_t vaddr, usize_t paddr, usize_t size, int perm)
 void vmuse(pagetable_t tbl)
 {
     sfence_vma();
-    w_satp(((usize_t)tbl >> 12) | SATP_SV39);
+    w_satp(((usize)tbl >> 12) | SATP_SV39);
     sfence_vma();
 }
 void kvmuse(void)
@@ -92,9 +92,9 @@ void kvminit(void)
     memset(kpagetable, 0, PGSIZE);
 
     // kernel code
-    kvmmap((usize_t)kstart, (usize_t)kstart, (usize_t)(ktextend - kstart), PTE_R | PTE_X);
+    kvmmap((usize)kstart, (usize)kstart, (usize)(ktextend - kstart), PTE_R | PTE_X);
     // give r/w to rest of RAM
-    kvmmap((usize_t)ktextend, (usize_t)ktextend, (usize_t)(PHYSTOP - ktextend), PTE_R | PTE_W);
+    kvmmap((usize)ktextend, (usize)ktextend, (usize)(PHYSTOP - ktextend), PTE_R | PTE_W);
 
     // mmio virutal memory regions
     // clint

@@ -12,13 +12,13 @@ void mstart(char *dtb)
     // GOAL: get out of machine mode asap
 
     // set next privilege to S mode
-    usize_t status = r_mstatus();
+    usize status = r_mstatus();
     status &= ~MSTATUS_MPP_MASK;
     status |= MSTATUS_MPP_S;
     w_mstatus(status);
 
     // set mepc (mret will jump here)
-    w_mepc((uint64_t)main);
+    w_mepc((u64)main);
 
     // delegate all interrupts and exceptions to S mode
     w_medeleg(0xffff);
@@ -37,7 +37,7 @@ void mstart(char *dtb)
 
 
 void _traptimer();
-uint64_t timerscratch[5];
+u64 timerscratch[5];
 
 // since the CLINT can only produce machine-mode interrupts,
 // we must initialize the timer and take the interrupt in
@@ -47,19 +47,19 @@ uint64_t timerscratch[5];
 // to supervisor mode
 static void timerinit(void)
 {
-    uint64_t interval = 1000000;
+    u64 interval = 1000000;
     *CLINT_MTIMECMP = *CLINT_MTIME + interval;
 
     // setup scratch
     // mscratch[0..=2] = register scratch
     // mscratch[3] = addr of CLINT_MTIMECMP
     // mscratch[4] = our desired interval
-    timerscratch[3] = (uint64_t)CLINT_MTIMECMP;
+    timerscratch[3] = (u64)CLINT_MTIMECMP;
     timerscratch[4] = interval;
-    w_mscratch((uint64_t)&timerscratch[0]);
+    w_mscratch((usize)&timerscratch[0]);
 
     // setup interrupt handler
-    w_mtvec((uint64_t)_traptimer);
+    w_mtvec((usize)_traptimer);
     w_mie(MIE_MTIE);
     w_mstatus(r_mstatus() | MSTATUS_MPIE);
 }

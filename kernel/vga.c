@@ -22,12 +22,12 @@
 #define VBE_DISPI_VBE_ENABLED 0x40
 #define VBE_DISPI_NOCLEARMEM 0x80
 
-// both of these must fit to uint32_t space because of PCI BARs
-#define VGA_FB ((volatile uint8_t *)0x40000000)
+// both of these must fit to u32 space because of PCI BARs
+#define VGA_FB ((volatile u8 *)0x40000000)
 #define VGA_MMIO (VGA_FB + (16 * 1024 * 1024))
 
 #define VGAIO(reg) (VGA_MMIO + (reg) + (0x400 - 0x3c0))
-#define BOCHSIO(idx) (volatile uint16_t *)(VGA_MMIO + 0x500 + ((idx) << 1))
+#define BOCHSIO(idx) (volatile u16 *)(VGA_MMIO + 0x500 + ((idx) << 1))
 
 void vgainit(void)
 {
@@ -40,8 +40,8 @@ void vgainit(void)
         panic("find display device");
 
     // set the addresses of the frame-buffer and the vga io
-    device->bar[0] = (uint32_t)(uint64_t)VGA_FB;
-    device->bar[2] = (uint32_t)(uint64_t)VGA_MMIO;
+    device->bar[0] = (u32)(u64)VGA_FB;
+    device->bar[2] = (u32)(u64)VGA_MMIO;
     device->command = PCI_CMD_IOSPACE | PCI_CMD_MEMSPACE;
 
     // enable ram and color output
@@ -58,7 +58,7 @@ void vgainit(void)
     printf("display initialized with bochs VBE\n");
 }
 
-void vgasetfb(uint8_t *fb, usize_t size)
+void vgasetfb(u8 *fb, usize size)
 {
-    memcpy((uint8_t *)VGA_FB, fb, size);
+    memcpy((u8 *)VGA_FB, fb, size);
 }

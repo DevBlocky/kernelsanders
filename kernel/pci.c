@@ -10,10 +10,10 @@ void pci_enum_begin(struct pci_iterator *iter)
 
 BOOL pci_enum_next(struct pci_iterator *iter, volatile struct pci_device **device)
 {
-    uint16_t vendor_id = 0x0000;
+    u16 vendor_id = 0x0000;
     while ((vendor_id == 0x0000 || vendor_id == 0xFFFF) && iter->bus < 256)
     {
-        uint64_t offset = (iter->bus << 16) | (iter->slot << 11) | (iter->func << 8);
+        u64 offset = (iter->bus << 16) | (iter->slot << 11) | (iter->func << 8);
         *device = (volatile struct pci_device *)(PCI_MMIO + offset);
         vendor_id = (*device)->vendor_id;
 
@@ -30,6 +30,6 @@ void pci_dbgprint(volatile struct pci_device* device) {
     printf("PCI display device initialized\n");
     printf("device_id:%hu vendor_id:%hu\n", device->device_id, device->vendor_id);
     printf("    header:%hu command:%hu status:%hu\n", device->header_type, device->command, device->status);
-    for (usize_t i = 0; i < sizeof(device->bar) / sizeof(uint32_t); i++)
+    for (usize i = 0; i < sizeof(device->bar) / sizeof(u32); i++)
         printf("    bar%p: %hu\n", i, device->bar[i]);
 }

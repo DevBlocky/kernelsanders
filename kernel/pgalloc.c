@@ -5,7 +5,7 @@ struct run
 {
     struct run *next;
 };
-struct run *freelist;
+static struct run *freelist;
 
 int alloc;
 int allocmax;
@@ -14,10 +14,10 @@ int allocmax;
 void pgfree(void *page)
 {
     struct run *r;
-    usize_t addr = (usize_t)page;
+    usize addr = (usize)page;
 
     // make sure it's a valid page address
-    if (addr % PGSIZE != 0 || addr < (usize_t)kend || addr >= (usize_t)PHYSTOP)
+    if (addr % PGSIZE != 0 || addr < (usize)kend || addr >= (usize)PHYSTOP)
         panic("page free");
 
     // add this page to the freelist
@@ -41,11 +41,11 @@ void *pgalloc(void)
 void allocinit(void)
 {
     freelist = NULL;
-    uint32_t n = 0;
+    u32 n = 0;
 
     // "free" all available pages of physical memory
     // (i.e. from the end of kernel data to PHYSTOP)
-    void *p = (void *)PGCEIL((usize_t)kend);
+    void *p = (void *)PGCEIL((usize)kend);
     for (; p + PGSIZE <= (void *)PHYSTOP; p += PGSIZE, n++)
         pgfree(p);
 
@@ -54,27 +54,27 @@ void allocinit(void)
     printf("mem pages: %u\n", n);
 }
 
-void memset(void *ptr, usize_t val, usize_t size)
+void memset(void *ptr, usize val, usize size)
 {
-    // set usize_t bytes at a time
-    // usize_t so the compiler can use registers
-    usize_t *dst = (usize_t *)ptr;
-    for (usize_t i = 0; i < size / sizeof(usize_t); i++)
+    // set usize bytes at a time
+    // usize so the compiler can use registers
+    usize *dst = (usize *)ptr;
+    for (usize i = 0; i < size / sizeof(usize); i++)
         *dst++ = val;
 
-    // if size isn't a multiple of sizeof(usize_t), we need
+    // if size isn't a multiple of sizeof(usize), we need
     // to set the remaining bytes
-    uint8_t *dst2 = (uint8_t *)dst;
-    for (usize_t i = 0; i < size % sizeof(usize_t); i++)
-        *dst2++ = ((uint8_t *)&val)[i];
+    u8 *dst2 = (u8 *)dst;
+    for (usize i = 0; i < size % sizeof(usize); i++)
+        *dst2++ = ((u8 *)&val)[i];
 }
-void memcpy(void *dst, void *src, usize_t size)
+void memcpy(void *dst, void *src, usize size)
 {
-    usize_t *ldst = dst, *lsrc = src;
-    for (usize_t i = 0; i < size / sizeof(usize_t); i++)
+    usize *ldst = dst, *lsrc = src;
+    for (usize i = 0; i < size / sizeof(usize); i++)
         *ldst++ = *lsrc++;
 
-    uint8_t *sdst = (uint8_t*)ldst, *ssrc = (uint8_t*)lsrc;
-    for (usize_t i = 0; i < size % sizeof(usize_t); i++)
+    u8 *sdst = (u8*)ldst, *ssrc = (u8*)lsrc;
+    for (usize i = 0; i < size % sizeof(usize); i++)
         *sdst++ = *ssrc++;
 }

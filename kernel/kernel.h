@@ -30,8 +30,8 @@ extern int allocmax;
 void allocinit(void);
 void pgfree(void *page);
 void *pgalloc(void);
-void memset(void *ptr, usize_t val, usize_t size);
-void memcpy(void *dst, void *src, usize_t size);
+void memset(void *ptr, usize val, usize size);
+void memcpy(void *dst, void *src, usize size);
 
 // vm.c
 void kvminit(void);
@@ -45,21 +45,21 @@ void trapinit(void);
 
 struct pci_iterator
 {
-    uint16_t bus, slot, func;
+    u16 bus, slot, func;
 };
 
 __attribute((packed)) struct pci_device
 {
     // each row = 32bits
-    uint16_t vendor_id, device_id;
-    uint16_t command, status;
-    uint8_t revision_id, prog_if, subclass, class;
-    uint8_t cl_size, l_timer, header_type, bist;
+    u16 vendor_id, device_id;
+    u16 command, status;
+    u8 revision_id, prog_if, subclass, class;
+    u8 cl_size, l_timer, header_type, bist;
 
-    uint32_t bar[6];
+    u32 bar[6];
 
-    uint32_t padd[5];
-    uint8_t intr_line, intr_pin;
+    u32 padd[5];
+    u8 intr_line, intr_pin;
 };
 typedef volatile struct pci_device *pci_device_t;
 
@@ -68,6 +68,6 @@ BOOL pci_enum_next(struct pci_iterator *iter, pci_device_t *device);
 
 // vga.c
 void vgainit(void);
-void vgasetfb(uint8_t *fb, usize_t size);
+void vgasetfb(u8 *fb, usize size);
 
 #endif // __KERNEL_H

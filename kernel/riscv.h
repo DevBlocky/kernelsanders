@@ -16,8 +16,8 @@ extern char kend[];
 // for some reason, the offsets of CLINT registers are not well documented
 // (especially the CLINT_MTIME) I could only find it here (section 6.1):
 // https://sifive.cdn.prismic.io/sifive%2Fc89f6e5a-cf9e-44c3-a3db-04420702dcc1_sifive+e31+manual+v19.08.pdf
-#define CLINT_MTIMECMP (volatile uint64_t *)(CLINT_MMIO + 0x4000)
-#define CLINT_MTIME (volatile uint64_t *)(CLINT_MMIO + 0xBFF8)
+#define CLINT_MTIMECMP (volatile u64 *)(CLINT_MMIO + 0x4000)
+#define CLINT_MTIME (volatile u64 *)(CLINT_MMIO + 0xBFF8)
 
 #define PLIC_MMIO 0xc000000UL
 
@@ -36,48 +36,48 @@ extern char kend[];
 
 #define MIE_MTIE (1 << 7)
 
-static inline usize_t r_mstatus()
+static inline usize r_mstatus()
 {
-    usize_t status;
+    usize status;
     asm volatile("csrr %0, mstatus" : "=r"(status));
     return status;
 }
-static inline void w_mstatus(usize_t mstatus)
+static inline void w_mstatus(usize mstatus)
 {
     asm volatile("csrw mstatus, %0" : : "r"(mstatus));
 }
 
-static inline void w_mtvec(usize_t vector)
+static inline void w_mtvec(usize vector)
 {
     asm volatile("csrw mtvec, %0" : : "r"(vector));
 }
-static inline void w_mepc(usize_t addr)
+static inline void w_mepc(usize addr)
 {
     asm volatile("csrw mepc, %0" : : "r"(addr));
 }
-static inline void w_mie(usize_t flags)
+static inline void w_mie(usize flags)
 {
     asm volatile("csrw mie, %0" : : "r"(flags));
 }
-static inline void w_mscratch(usize_t any)
+static inline void w_mscratch(usize any)
 {
     asm volatile("csrw mscratch, %0" : : "r"(any));
 }
 
-static inline void w_mideleg(usize_t flags)
+static inline void w_mideleg(usize flags)
 {
     asm volatile("csrw mideleg, %0" : : "r"(flags));
 }
-static inline void w_medeleg(usize_t flags)
+static inline void w_medeleg(usize flags)
 {
     asm volatile("csrw medeleg, %0" : : "r"(flags));
 }
 
-static inline void w_pmpaddr0(usize_t addr)
+static inline void w_pmpaddr0(usize addr)
 {
     asm volatile("csrw pmpaddr0, %0" : : "r"(addr));
 }
-static inline void w_pmpcfg0(usize_t cfg)
+static inline void w_pmpcfg0(usize cfg)
 {
     asm volatile("csrw pmpcfg0, %0" : : "r"(cfg));
 }
@@ -92,44 +92,44 @@ static inline void w_pmpcfg0(usize_t cfg)
 #define SIE_SSIE (1 << 1)
 #define SIE_SEIE (1 << 9)
 
-static inline usize_t r_sstatus()
+static inline usize r_sstatus()
 {
-    usize_t status;
+    usize status;
     asm volatile("csrr %0, sstatus" : "=r"(status));
     return status;
 }
-static inline void w_sstatus(usize_t status)
+static inline void w_sstatus(usize status)
 {
     asm volatile("csrw sstatus, %0" : : "r"(status));
 }
 
-static inline void w_stvec(usize_t addr)
+static inline void w_stvec(usize addr)
 {
     asm volatile("csrw stvec, %0" : : "r"(addr));
 }
-static inline void w_sie(usize_t flags)
+static inline void w_sie(usize flags)
 {
     asm volatile("csrw sie, %0" : : "r"(flags));
 }
-static inline usize_t r_sip()
+static inline usize r_sip()
 {
-    usize_t flags;
+    usize flags;
     asm volatile("csrr %0, sip" : "=r"(flags));
     return flags;
 }
-static inline void w_sip(usize_t flags)
+static inline void w_sip(usize flags)
 {
     asm volatile("csrw sip, %0" : : "r"(flags));
 }
 
-static inline usize_t r_scause()
+static inline usize r_scause()
 {
-    usize_t code;
+    usize code;
     asm volatile("csrr %0, scause" : "=r"(code));
     return code;
 }
 
-static inline void w_satp(usize_t addr)
+static inline void w_satp(usize addr)
 {
     asm volatile("csrw satp, %0" : : "r"(addr));
 }
