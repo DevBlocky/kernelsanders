@@ -4,18 +4,18 @@
 #include "types.h"
 
 // panic.S
+extern BOOL panicking;
+
 void _panic(const char *s);
-inline static void panic(const char *s)
-{
-    // assembly used to force "call _panic"
-    // otherwise compiler might optimize with "j _panic"
-    // and ra won't contain the calling pc
-    asm(
-        "mv a0, %0\n"
-        "call _panic\n"
-        :
-        : "r"(s)
-        : "a0");
+inline static void panic(const char *s) {
+  // assembly used to force "call _panic"
+  // otherwise compiler might optimize with "j _panic"
+  // and ra won't contain the calling pc
+  asm("mv a0, %0\n"
+      "call _panic\n"
+      :
+      : "r"(s)
+      : "a0");
 }
 
 // printf.c
@@ -34,7 +34,19 @@ void memset(void *ptr, usize val, usize size);
 void memcpy(void *dst, void *src, usize size);
 
 // vm.c
+#define PTE_V (1 << 0)
+#define PTE_R (1 << 1)
+#define PTE_W (1 << 2)
+#define PTE_X (1 << 3)
+#define PTE_U (1 << 4)
+
 void kvminit(void);
+void kvmmap(usize vaddr, usize paddr, usize size, int perm);
+
+// kalloc.c
+void kallocinit(void);
+void *kmalloc(usize size);
+void kfree(void *ptr);
 
 // trap.c
 void trapinit(void);
@@ -43,23 +55,21 @@ void trapinit(void);
 #define PCI_CMD_IOSPACE (1 << 0)
 #define PCI_CMD_MEMSPACE (1 << 1)
 
-struct pci_iterator
-{
-    u16 bus, slot, func;
+struct pci_iterator {
+  u16 bus, slot, func;
 };
 
-__attribute((packed)) struct pci_device
-{
-    // each row = 32bits
-    u16 vendor_id, device_id;
-    u16 command, status;
-    u8 revision_id, prog_if, subclass, class;
-    u8 cl_size, l_timer, header_type, bist;
+struct __attribute((packed)) pci_device {
+  // each row = 32bits
+  u16 vendor_id, device_id;
+  u16 command, status;
+  u8 revision_id, prog_if, subclass, class;
+  u8 cl_size, l_timer, header_type, bist;
 
-    u32 bar[6];
+  u32 bar[6];
 
-    u32 padd[5];
-    u8 intr_line, intr_pin;
+  u32 padd[5];
+  u8 intr_line, intr_pin;
 };
 typedef volatile struct pci_device *pci_device_t;
 

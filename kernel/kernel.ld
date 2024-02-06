@@ -37,6 +37,6 @@ SECTIONS
         . = ALIGN(0x10);
         *(.bss*)
     }
-    
+
     PROVIDE(kend = .);
 }

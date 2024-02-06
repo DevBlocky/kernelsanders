@@ -36,50 +36,40 @@ extern char kend[];
 
 #define MIE_MTIE (1 << 7)
 
-static inline usize r_mstatus()
-{
-    usize status;
-    asm volatile("csrr %0, mstatus" : "=r"(status));
-    return status;
+static inline usize r_mstatus() {
+  usize status;
+  asm volatile("csrr %0, mstatus" : "=r"(status));
+  return status;
 }
-static inline void w_mstatus(usize mstatus)
-{
-    asm volatile("csrw mstatus, %0" : : "r"(mstatus));
+static inline void w_mstatus(usize mstatus) {
+  asm volatile("csrw mstatus, %0" : : "r"(mstatus));
 }
 
-static inline void w_mtvec(usize vector)
-{
-    asm volatile("csrw mtvec, %0" : : "r"(vector));
+static inline void w_mtvec(usize vector) {
+  asm volatile("csrw mtvec, %0" : : "r"(vector));
 }
-static inline void w_mepc(usize addr)
-{
-    asm volatile("csrw mepc, %0" : : "r"(addr));
+static inline void w_mepc(usize addr) {
+  asm volatile("csrw mepc, %0" : : "r"(addr));
 }
-static inline void w_mie(usize flags)
-{
-    asm volatile("csrw mie, %0" : : "r"(flags));
+static inline void w_mie(usize flags) {
+  asm volatile("csrw mie, %0" : : "r"(flags));
 }
-static inline void w_mscratch(usize any)
-{
-    asm volatile("csrw mscratch, %0" : : "r"(any));
+static inline void w_mscratch(usize any) {
+  asm volatile("csrw mscratch, %0" : : "r"(any));
 }
 
-static inline void w_mideleg(usize flags)
-{
-    asm volatile("csrw mideleg, %0" : : "r"(flags));
+static inline void w_mideleg(usize flags) {
+  asm volatile("csrw mideleg, %0" : : "r"(flags));
 }
-static inline void w_medeleg(usize flags)
-{
-    asm volatile("csrw medeleg, %0" : : "r"(flags));
+static inline void w_medeleg(usize flags) {
+  asm volatile("csrw medeleg, %0" : : "r"(flags));
 }
 
-static inline void w_pmpaddr0(usize addr)
-{
-    asm volatile("csrw pmpaddr0, %0" : : "r"(addr));
+static inline void w_pmpaddr0(usize addr) {
+  asm volatile("csrw pmpaddr0, %0" : : "r"(addr));
 }
-static inline void w_pmpcfg0(usize cfg)
-{
-    asm volatile("csrw pmpcfg0, %0" : : "r"(cfg));
+static inline void w_pmpcfg0(usize cfg) {
+  asm volatile("csrw pmpcfg0, %0" : : "r"(cfg));
 }
 
 //
@@ -92,58 +82,42 @@ static inline void w_pmpcfg0(usize cfg)
 #define SIE_SSIE (1 << 1)
 #define SIE_SEIE (1 << 9)
 
-static inline usize r_sstatus()
-{
-    usize status;
-    asm volatile("csrr %0, sstatus" : "=r"(status));
-    return status;
+static inline usize r_sstatus() {
+  usize status;
+  asm volatile("csrr %0, sstatus" : "=r"(status));
+  return status;
 }
-static inline void w_sstatus(usize status)
-{
-    asm volatile("csrw sstatus, %0" : : "r"(status));
+static inline void w_sstatus(usize status) {
+  asm volatile("csrw sstatus, %0" : : "r"(status));
 }
 
-static inline void w_stvec(usize addr)
-{
-    asm volatile("csrw stvec, %0" : : "r"(addr));
+static inline void w_stvec(usize addr) {
+  asm volatile("csrw stvec, %0" : : "r"(addr));
 }
-static inline void w_sie(usize flags)
-{
-    asm volatile("csrw sie, %0" : : "r"(flags));
+static inline void w_sie(usize flags) {
+  asm volatile("csrw sie, %0" : : "r"(flags));
 }
-static inline usize r_sip()
-{
-    usize flags;
-    asm volatile("csrr %0, sip" : "=r"(flags));
-    return flags;
+static inline usize r_sip() {
+  usize flags;
+  asm volatile("csrr %0, sip" : "=r"(flags));
+  return flags;
 }
-static inline void w_sip(usize flags)
-{
-    asm volatile("csrw sip, %0" : : "r"(flags));
+static inline void w_sip(usize flags) {
+  asm volatile("csrw sip, %0" : : "r"(flags));
 }
 
-static inline usize r_scause()
-{
-    usize code;
-    asm volatile("csrr %0, scause" : "=r"(code));
-    return code;
+static inline usize r_scause() {
+  usize code;
+  asm volatile("csrr %0, scause" : "=r"(code));
+  return code;
 }
 
-static inline void w_satp(usize addr)
-{
-    asm volatile("csrw satp, %0" : : "r"(addr));
+static inline void w_satp(usize addr) {
+  asm volatile("csrw satp, %0" : : "r"(addr));
 }
-static inline void sfence_vma() {
-    asm volatile("sfence.vma zero, zero");
-}
+static inline void sfence_vma() { asm volatile("sfence.vma zero, zero"); }
 
-static inline void intr_on()
-{
-    w_sstatus(r_sstatus() | SSTATUS_SIE);
-}
-static inline void intr_off()
-{
-    w_sstatus(r_sstatus() & ~SSTATUS_SIE);
-}
+static inline void intr_on() { w_sstatus(r_sstatus() | SSTATUS_SIE); }
+static inline void intr_off() { w_sstatus(r_sstatus() & ~SSTATUS_SIE); }
 
 #endif // __RISCV_H

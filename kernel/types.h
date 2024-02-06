@@ -22,14 +22,12 @@ typedef float f32;
 typedef double f64;
 typedef long double f128;
 
-
 // boolean type
 typedef int boolean;
 #define BOOL boolean
 #define TRUE 1
 #define FALSE 0
 
-
-#define NULL ((void*)0)
+#define NULL ((void *)0)
 
 #endif // __TYPES_H

@@ -1,21 +1,22 @@
 #include "kernel.h"
-#include "riscv.h"
 #include "picturedata.h"
+#include "riscv.h"
 
-void main(void)
-{
-    uartinit(); // must init serial before any printf
-    printf("kernel sanders is starting...\n");
-    allocinit();
-    kvminit();
-    trapinit();
-    vgainit();
+void main(void) {
+  uartinit(); // must init serial before any printf
+  printf("kernel sanders is starting...\n");
+  allocinit();
+  kvminit();
+  kallocinit();
+  trapinit();
+  vgainit();
 
-    vgasetfb(picturedata, picturedata_len);
+  vgasetfb(picturedata, picturedata_len);
 
-    printf("clock: %p\n", *CLINT_MTIME);
-    printf("KiB used:  %u\n", alloc * 4);
-    printf("KiB avail: %u\n", allocmax * 4);
+  printf("clock: %p\n", *CLINT_MTIME);
+  printf("KiB used:  %u\n", alloc * 4);
+  printf("KiB avail: %u\n", allocmax * 4);
+  printf("kmalloc: %p\n", kmalloc(sizeof(u64)));
 
-    panic("main return");
+  panic("main return");
 }
