@@ -16,7 +16,6 @@ void main(void) {
   printf("clock: %p\n", *CLINT_MTIME);
   printf("KiB used:  %u\n", alloc * 4);
   printf("KiB avail: %u\n", allocmax * 4);
-  printf("kmalloc: %p\n", kmalloc(sizeof(u64)));
 
   panic("main return");
 }

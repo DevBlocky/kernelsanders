@@ -6,8 +6,8 @@
 // panic.S
 extern BOOL panicking;
 
-void _panic(const char *s);
-inline static void panic(const char *s) {
+__attribute((noreturn)) void _panic(const char *s);
+inline static __attribute__((noreturn)) void panic(const char *s) {
   // assembly used to force "call _panic"
   // otherwise compiler might optimize with "j _panic"
   // and ra won't contain the calling pc
@@ -16,7 +16,10 @@ inline static void panic(const char *s) {
       :
       : "r"(s)
       : "a0");
+  for (;;)
+    ;
 }
+#define assert(b) ((b) ? (void)0 : panic("assert failed: " #b))
 
 // printf.c
 void uartinit(void);
@@ -42,6 +45,7 @@ void memcpy(void *dst, void *src, usize size);
 
 void kvminit(void);
 void kvmmap(usize vaddr, usize paddr, usize size, int perm);
+void kvmuse(void);
 
 // kalloc.c
 void kallocinit(void);

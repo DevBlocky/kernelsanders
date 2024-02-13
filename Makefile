@@ -10,6 +10,7 @@ OBJS = \
 	$K/printf.o \
 	$K/pgalloc.o \
 	$K/vm.o \
+	$K/kalloc.o \
 	$K/trap.o \
 	$K/pci.o \
 	$K/vga.o \

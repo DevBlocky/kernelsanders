@@ -28,7 +28,7 @@ void pgfree(void *page) {
 // allocate 4096 bytes on a page boundary
 void *pgalloc(void) {
   if (!freelist)
-    return 0;
+    return NULL;
   void *page = (void *)freelist;
   freelist = freelist->next;
   alloc++;
@@ -37,7 +37,7 @@ void *pgalloc(void) {
 
 void allocinit(void) {
   freelist = NULL;
-  u32 n = 0;
+  int n = 0;
 
   // "free" all available pages of physical memory
   // (i.e. from the end of kernel data to PHYSTOP)
@@ -45,9 +45,9 @@ void allocinit(void) {
   for (; p + PGSIZE <= (void *)PHYSTOP; p += PGSIZE, n++)
     pgfree(p);
 
-  allocmax = -alloc;
+  allocmax = n;
   alloc = 0;
-  printf("mem pages: %u\n", n);
+  printf("mem pages: %u\n", allocmax);
 }
 
 void memset(void *ptr, usize val, usize size) {
