@@ -54,6 +54,23 @@ void kvmmap(usize vaddr, usize paddr, usize size, int perm) {
     panic("kvmmap");
 }
 
+void vmunmap(pagetable_t tbl, usize vaddr, usize *paddr, usize size) {
+  usize vaddrend = PGFLOOR(vaddr + size - 1);
+  vaddr = PGFLOOR(vaddr);
+
+  for (int i = 0; vaddr <= vaddrend; vaddr += PGSIZE, i++) {
+    pte_t *pte = vmwalk(tbl, vaddr, FALSE);
+    if (!pte)
+      continue;
+    if (paddr)
+      paddr[i] = *pte | PTE_V ? pte2pa(*pte) : 0;
+    *pte = 0;
+  }
+}
+void kvmunmap(usize vaddr, usize *paddr, usize size) {
+  vmunmap(kpagetable, vaddr, paddr, size);
+}
+
 void vmuse(pagetable_t tbl) {
   sfence_vma();
   w_satp(((usize)tbl >> 12) | SATP_SV39);

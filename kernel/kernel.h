@@ -45,6 +45,7 @@ void memcpy(void *dst, void *src, usize size);
 
 void kvminit(void);
 void kvmmap(usize vaddr, usize paddr, usize size, int perm);
+void kvmunmap(usize vaddr, usize *paddr, usize size);
 void kvmuse(void);
 
 // kalloc.c

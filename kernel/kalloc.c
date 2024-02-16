@@ -10,15 +10,21 @@ static void *ksbrk(isize bytes) {
   void *page;
   usize oldbrk = kmem.brk;
 
-  if (bytes < 0)
-    panic("ksbrk todo");
   kmem.brk += bytes;
 
+  // allocate new pages (only runs if bytes > 0)
   for (usize addr = PGCEIL(oldbrk); addr < kmem.brk; addr += PGSIZE) {
     if (!(page = pgalloc()))
       panic("ksbrk pgalloc");
     kvmmap(addr, (usize)page, PGSIZE, PTE_R | PTE_W);
     printf("ksbrk alloc va=%hp pa=%hp\n", addr, page);
+  }
+  // deallocate pages (only runs if bytes < 0)
+  for (usize addr = PGFLOOR(oldbrk); addr >= kmem.brk; addr -= PGSIZE) {
+    // NOTE: kvmunmap takes an array for pa, but we are only unmapping one page
+    kvmunmap(addr, (usize *)&page, PGSIZE);
+    pgfree(page);
+    printf("ksbrk dealloc va=%hp pa=%hp\n", addr, page);
   }
 
   return (void *)oldbrk;
@@ -56,22 +62,27 @@ static void split(struct block *b, usize fit) {
 
 // search for the predecesor block of b in the freelist
 // i.e. this is where b should be inserted into the freelist
-static struct block *search(struct block *b) {
-  struct block *cur = freelist, *last = NULL;
+static struct block *search(struct block *b, struct block **prev) {
+  struct block *cur = freelist, *last = NULL, *last2 = NULL;
   while (cur && (usize)cur < (usize)b) {
+    last2 = last;
     last = cur;
     cur = cur->next;
   }
+  if (prev)
+    *prev = last2;
   return last;
 }
 
 // merge b and b->next if they are adjacent
-static void coalesce(struct block *b) {
+static BOOL coalesce(struct block *b) {
   // while b->next is adjacent to b
-  while ((usize)b->next == (usize)b + b->size) {
+  if ((usize)b->next == (usize)b + b->size) {
     b->size += b->next->size;
     b->next = b->next->next;
+    return TRUE;
   }
+  return FALSE;
 }
 
 void *kmalloc(usize size) {
@@ -99,18 +110,24 @@ void *kmalloc(usize size) {
 }
 void kfree(void *ptr) {
   struct block *b = (struct block *)((usize)ptr - METASIZE);
-  struct block *find = search(b);
+  struct block *find, *prev;
+  find = search(b, &prev);
   struct block **next = find ? &find->next : &freelist;
-
-  // TODO: double free check?
 
   // insert the block
   b->next = *next;
   *next = b;
   // merge adj blocks
   coalesce(b);
-  if (find)
-    coalesce(find);
+  if (find && coalesce(find))
+    next = prev ? &prev->next : &freelist;
+
+  b = *next;
+  // unalloc ksbrk if b is the last block
+  if (!b->next && (usize)b + b->size == (usize)ksbrk(0)) {
+    ksbrk(-b->size);
+    *next = NULL;
+  }
 }
 
 void kallocinit(void) {
