@@ -31,10 +31,14 @@ static void *ksbrk(isize bytes) {
 }
 
 struct block {
+  usize magic;
   usize size;
   struct block *next;
 };
 static struct block *freelist;
+
+#define MAGIC 0xabcd0123
+#define CHECKMAGIC(b) assert((b)->magic == MAGIC)
 
 #define METASIZE sizeof(struct block)
 #define PTRSIZE sizeof(usize)
@@ -44,8 +48,9 @@ static struct block *freelist;
 static struct block *makeblock(usize size) {
   assert(size >= METASIZE);
   struct block *b = (struct block *)ksbrk(size);
-  b->next = NULL;
+  b->magic = MAGIC;
   b->size = size;
+  b->next = NULL;
   return b;
 }
 
@@ -54,10 +59,11 @@ static void split(struct block *b, usize fit) {
   assert(fit <= b->size + METASIZE);
 
   struct block *split = (struct block *)((usize)b + fit);
-  split->next = b->next;
+  split->magic = MAGIC;
   split->size = b->size - fit;
-  b->next = split;
+  split->next = b->next;
   b->size = fit;
+  b->next = split;
 }
 
 // search for the predecesor block of b in the freelist
@@ -68,6 +74,8 @@ static struct block *search(struct block *b, struct block **prev) {
     last2 = last;
     last = cur;
     cur = cur->next;
+    // cur == last if double free (sometimes)
+    assert(cur != last);
   }
   if (prev)
     *prev = last2;
@@ -91,6 +99,7 @@ void *kmalloc(usize size) {
   // look for an available block in the freelist
   struct block *cur = freelist, *last = NULL;
   while (cur && cur->size < blocksz) {
+    CHECKMAGIC(cur);
     last = cur;
     cur = cur->next;
   }
@@ -109,20 +118,23 @@ void *kmalloc(usize size) {
   return (void *)((usize)cur + METASIZE);
 }
 void kfree(void *ptr) {
+  struct block *find, *prev, **next;
   struct block *b = (struct block *)((usize)ptr - METASIZE);
-  struct block *find, *prev;
+  CHECKMAGIC(b);
+
   find = search(b, &prev);
-  struct block **next = find ? &find->next : &freelist;
+  next = find ? &find->next : &freelist;
 
   // insert the block
   b->next = *next;
   *next = b;
   // merge adj blocks
   coalesce(b);
-  if (find && coalesce(find))
+  if (find && coalesce(find)) {
     next = prev ? &prev->next : &freelist;
+    b = find;
+  }
 
-  b = *next;
   // unalloc ksbrk if b is the last block
   if (!b->next && (usize)b + b->size == (usize)ksbrk(0)) {
     ksbrk(-b->size);
