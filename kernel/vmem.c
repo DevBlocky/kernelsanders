@@ -82,12 +82,14 @@ void kvminit(void) {
   kpagetable = (pagetable_t)pgalloc();
   memset(kpagetable, 0, PGSIZE);
 
-  // kernel code
-  kvmmap((usize)kstart, (usize)kstart, (usize)(ktextend - kstart),
-         PTE_R | PTE_X);
-  // give r/w to rest of RAM
-  kvmmap((usize)ktextend, (usize)ktextend, (usize)(PHYSTOP - ktextend),
+  // give r/w to all of RAM
+  kvmmap((usize)sysmem.memstart, (usize)sysmem.memstart, sysmem.memsz,
          PTE_R | PTE_W);
+  // change r/x to kernel code
+  // the kernel text should be page aligned so the page entry
+  // doesn't bleed into other RAM
+  kvmmap((usize)&kstart, (usize)&kstart, (usize)&ktextend - (usize)&kstart,
+         PTE_R | PTE_X);
 
   // mmio virutal memory regions
   // clint

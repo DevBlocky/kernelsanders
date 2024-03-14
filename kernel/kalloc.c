@@ -41,7 +41,7 @@ static struct block *freelist;
 #define CHECKMAGIC(b) assert((b)->magic == MAGIC)
 
 #define METASIZE sizeof(struct block)
-#define PTRSIZE sizeof(usize)
+#define PTRSIZE sizeof(void *)
 #define ALIGNPTR(x) (((x) + (PTRSIZE - 1)) & ~(PTRSIZE - 1))
 
 // create a new block of size by extending the heap
@@ -84,7 +84,7 @@ static struct block *search(struct block *b, struct block **prev) {
 
 // merge b and b->next if they are adjacent
 static BOOL coalesce(struct block *b) {
-  // while b->next is adjacent to b
+  // if b->next is adjacent to b
   if ((usize)b->next == (usize)b + b->size) {
     b->size += b->next->size;
     b->next = b->next->next;
@@ -144,6 +144,7 @@ void kfree(void *ptr) {
 
 void kallocinit(void) {
   // start of kernel heap (in virtual memory)
-  kmem.begin = kmem.brk = PGCEIL((usize)PHYSTOP + PGSIZE);
+  kmem.begin = kmem.brk =
+      PGCEIL((usize)sysmem.memstart + sysmem.memsz + PGSIZE);
   freelist = NULL;
 }

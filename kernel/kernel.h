@@ -21,22 +21,34 @@ inline static __attribute__((noreturn)) void panic(const char *s) {
 }
 #define assert(b) ((b) ? (void)0 : panic("assert failed: " #b))
 
+// util.c
+void memset(void *ptr, usize val, usize size);
+void memcpy(void *dst, void *src, usize size);
+usize strlen(const char *c);
+int strcmp(const char *a, const char *b);
+u32 be2cpu32(u32 be);
+u64 be2cpu64(u64 be);
+
+// devtree.c
+usize dtgetmmio(const char *compat, void **addr);
+
 // printf.c
 void uartinit(void);
 void uartintr(void);
 void printf(const char *format, ...);
 
-// pgalloc.c
-extern int alloc;
-extern int allocmax;
-
-void allocinit(void);
+// sysmem.c
+struct sysmeminfo {
+  void *memstart;
+  usize memsz;
+  usize alloc, allocmax;
+};
+extern struct sysmeminfo sysmem;
+void sysmeminit(void);
 void pgfree(void *page);
 void *pgalloc(void);
-void memset(void *ptr, usize val, usize size);
-void memcpy(void *dst, void *src, usize size);
 
-// vm.c
+// vmem.c
 #define PTE_V (1 << 0)
 #define PTE_R (1 << 1)
 #define PTE_W (1 << 2)

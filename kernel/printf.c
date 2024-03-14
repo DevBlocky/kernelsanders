@@ -12,7 +12,10 @@
 #define LSR_HAS_DATA (1 << 0)
 #define LSR_TX_IDLE (1 << 5)
 
-#define UART0REG(reg) ((volatile u8 *)(UART0_MMIO + (reg)))
+// uart0 is set in uartinit, but we might still print before that
+// so a static value is used
+static volatile u8 *uart0 = (volatile u8 *)UART0_MMIO;
+#define UART0REG(reg) (uart0 + (reg))
 
 static void uartputc(char c) {
   // spin while uart cannot receive anymore data
@@ -33,6 +36,10 @@ void uartintr(void) {
     *UART0REG(RBR);
 }
 void uartinit(void) {
+  void *tmp;
+  assert(dtgetmmio("ns16550a", &tmp) != 0);
+  uart0 = tmp;
+
   // enable interrupts
   // NOTE: also needs to be enabled from PLIC
   *UART0REG(IER) = IER_RDA;
@@ -91,15 +98,17 @@ void printf(const char *format, ...) {
     case 'd': // signed int
       printfsigned((i64)va_arg(args, i32), base);
       break;
-    case 's':
+    case 's': {
       const char *val = va_arg(args, char *);
       if (val != NULL)
         uartputs(val);
       break;
-    case 'c':
+    }
+    case 'c': {
       const char c = (char)va_arg(args, int);
       uartputc(c);
       break;
+    }
     case '%':
       uartputc('%');
       break;

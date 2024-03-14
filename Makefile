@@ -7,9 +7,11 @@ OBJS = \
 	$K/trapkernel.o \
 	$K/mstart.o \
 	$K/main.o \
+	$K/util.o \
+	$K/devtree.o \
 	$K/printf.o \
-	$K/pgalloc.o \
-	$K/vm.o \
+	$K/sysmem.o \
+	$K/vmem.o \
 	$K/kalloc.o \
 	$K/trap.o \
 	$K/pci.o \
@@ -44,7 +46,7 @@ $K/picturedata_codegen.c: colonel.jpg
 	magick convert $< -resize 640x480\! BGR:- | xxd -i -n picturedata > $@
 
 objdump: $(OUTELF)
-	$(OBJDUMP) -M no-aliases -d $< > $<.asm
+	$(OBJDUMP) -d $< > $<.asm
 
 
 clean:

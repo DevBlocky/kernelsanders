@@ -3,10 +3,9 @@
 
 #include "types.h"
 
-extern char kstart[];
-extern char ktextend[];
-extern char kend[];
-#define PHYSTOP (kstart + 128 * 1024 * 1024)
+extern nothing_t kstart;
+extern nothing_t ktextend;
+extern nothing_t kend;
 
 #define PGSIZE 4096
 #define PGCEIL(a) (((a) + PGSIZE - 1) & ~(PGSIZE - 1))

@@ -3,11 +3,11 @@
 #include "types.h"
 
 static void timerinit(void);
-void main(void);
+void init(void *dtb);
 
 __attribute__((aligned(16))) char stack0[STACK0_SIZE];
 
-void mstart(char *dtb) {
+void mstart(void *dtb) {
   // GOAL: get out of machine mode asap
 
   // set next privilege to S mode
@@ -17,7 +17,7 @@ void mstart(char *dtb) {
   w_mstatus(status);
 
   // set mepc (mret will jump here)
-  w_mepc((u64)main);
+  w_mepc((usize)init);
 
   // delegate all interrupts and exceptions to S mode
   w_medeleg(0xffff);
@@ -30,7 +30,8 @@ void mstart(char *dtb) {
   // init timer interrupts
   timerinit();
 
-  // jump to main
+  // jump to main (with dtb as arg)
+  asm("mv a0, %0" : : "r"(dtb) : "a0");
   asm("mret");
 }
 

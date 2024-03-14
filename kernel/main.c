@@ -1,21 +1,21 @@
 #include "kernel.h"
 #include "picturedata.h"
-#include "riscv.h"
 
-void main(void) {
+extern void *devtree;
+// kernel starts here
+void init(void *dtb) {
+  devtree = dtb;
+  // dtsysinit(dtb);
   uartinit(); // must init serial before any printf
+  printf("dtb = %hp\n", dtb);
   printf("kernel sanders is starting...\n");
-  allocinit();
+  sysmeminit();
   kvminit();
   kallocinit();
   trapinit();
   vgainit();
 
-  vgasetfb(picturedata, picturedata_len);
+  vgasetfb((u8 *)picturedata, picturedata_len);
 
-  printf("clock: %p\n", *CLINT_MTIME);
-  printf("KiB used:  %u\n", alloc * 4);
-  printf("KiB avail: %u\n", allocmax * 4);
-
-  panic("main return");
+  panic("init return");
 }

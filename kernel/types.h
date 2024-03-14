@@ -28,6 +28,11 @@ typedef int boolean;
 #define TRUE 1
 #define FALSE 0
 
+// pointer types
 #define NULL ((void *)0)
+
+// nothing type
+typedef struct {
+} nothing_t;
 
 #endif // __TYPES_H
