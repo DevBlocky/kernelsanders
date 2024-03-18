@@ -1,17 +1,15 @@
 #include "kernel.h"
 #include "picturedata.h"
 
-extern void *devtree;
 // kernel starts here
 void init(void *dtb) {
-  devtree = dtb;
-  // dtsysinit(dtb);
+  dtsysinit(dtb);
   uartinit(); // must init serial before any printf
-  printf("dtb = %hp\n", dtb);
   printf("kernel sanders is starting...\n");
   sysmeminit();
   kvminit();
   kallocinit();
+  dtinit();
   trapinit();
   vgainit();
 

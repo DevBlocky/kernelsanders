@@ -6,12 +6,18 @@
 #define FDT_STRINGOFF_IDX 3
 #define FDT_VERSION_IDX 5
 #define FDT_MAGIC 0xd00dfeed
+#define FDT_VERSION 17
 
-u32 *devtree;
+static u32 *devtree;
 
 static inline u32 dtgetprop(usize prop) { return be2cpu32(devtree[prop]); }
 static char *dtgetstring(u32 stroff) {
   return (char *)((usize)devtree + dtgetprop(FDT_STRINGOFF_IDX) + stroff);
+}
+
+void dtmem(usize *start, usize *end) {
+  *start = (usize)devtree;
+  *end = *start + dtgetprop(FDT_SIZE_IDX);
 }
 
 struct dtparsectx {
@@ -34,6 +40,8 @@ struct dtparsetoken {
 };
 
 static void dtparsebegin(struct dtparsectx *ctx) {
+  assert(dtgetprop(FDT_MAGIC_IDX) == FDT_MAGIC);
+  assert(dtgetprop(FDT_VERSION_IDX) == FDT_VERSION); // only support version 17
   ctx->ptr = (u32 *)((void *)devtree + dtgetprop(FDT_STRUCTOFF_IDX));
   ctx->acells = ctx->scells = 0;
 }
@@ -105,8 +113,6 @@ static usize usizecell(void *data, u32 cells) {
 }
 
 usize dtgetmmio(const char *compat, void **addr) {
-  assert(dtgetprop(FDT_MAGIC_IDX) == FDT_MAGIC);
-
   struct dtparsectx iter;
   struct dtparsetoken tok;
   BOOL match = FALSE;
@@ -143,4 +149,9 @@ usize dtgetmmio(const char *compat, void **addr) {
 
   // no match
   return 0;
+}
+
+void dtsysinit(void *dtb) { devtree = dtb; }
+void dtinit(void) {
+  // TODO: implement full device tree parsing
 }

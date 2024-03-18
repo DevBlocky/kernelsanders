@@ -5,8 +5,15 @@ struct run {
   struct run *next;
 };
 static struct run *freelist;
-
 struct sysmeminfo sysmem;
+
+static inline BOOL overlaps(usize start1, usize end1, usize start2,
+                            usize end2) {
+  return start1 < end2 && start2 < end1;
+}
+static inline BOOL pgoverlaps(usize pg, usize start, usize end) {
+  return overlaps(pg, pg + PGSIZE, start, end);
+}
 
 // free a page created with pgalloc()
 void pgfree(void *page) {
@@ -35,20 +42,25 @@ void *pgalloc(void) {
 }
 
 void sysmeminit(void) {
+  usize memstart, memend, dtstart, dtend;
   freelist = NULL;
+
+  // get memory info from device tree
+  dtmem(&dtstart, &dtend);
   sysmem.memsz = dtgetmmio("memory", &sysmem.memstart);
   assert(sysmem.memsz != 0);
 
-  usize memstart = (usize)sysmem.memstart;
-  usize memend = memstart + sysmem.memsz;
+  memstart = (usize)sysmem.memstart;
+  memend = memstart + sysmem.memsz;
   int n = 0;
   // loop through all memory pages
   for (usize p = PGCEIL(memstart); p + PGSIZE <= memend; p += PGSIZE) {
-    // if this page is not part of the kernel memory
-    if (p < (usize)&kstart || p >= (usize)&kend) {
-      pgfree((void *)p);
-      n++;
-    }
+    // skip kernel memory and device tree memory
+    if (pgoverlaps(p, (usize)&kstart, (usize)&kend) ||
+        pgoverlaps(p, dtstart, dtend))
+      continue;
+    pgfree((void *)p);
+    n++;
   }
 
   sysmem.allocmax = n;

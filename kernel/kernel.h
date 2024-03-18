@@ -30,6 +30,9 @@ u32 be2cpu32(u32 be);
 u64 be2cpu64(u64 be);
 
 // devtree.c
+void dtsysinit(void *dtb);
+void dtinit(void);
+void dtmem(usize *start, usize *end);
 usize dtgetmmio(const char *compat, void **addr);
 
 // printf.c

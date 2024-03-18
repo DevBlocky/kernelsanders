@@ -27,9 +27,8 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -Ofast -ggdb \
-	-MD -mcmodel=medany -nostdlib \
-	-ffreestanding
+CFLAGS = -Wall -ggdb -MD -mcmodel=medany \
+	-nostdlib -ffreestanding
 
 
 QEMU = qemu-system-riscv64
