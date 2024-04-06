@@ -67,6 +67,7 @@ void kvmuse(void);
 void kallocinit(void);
 void *kmalloc(usize size);
 void kfree(void *ptr);
+void *krealloc(void *ptr, usize size);
 
 // trap.c
 void trapinit(void);
