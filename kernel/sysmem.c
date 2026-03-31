@@ -42,11 +42,10 @@ void *pgalloc(void) {
 }
 
 void sysmeminit(void) {
-  usize memstart, memend, dtstart, dtend;
+  usize memstart, memend;
   freelist = NULL;
 
   // get memory info from device tree
-  dtmem(&dtstart, &dtend);
   sysmem.memsz = dtgetmmio("memory", &sysmem.memstart);
   assert(sysmem.memsz != 0);
 
@@ -55,9 +54,8 @@ void sysmeminit(void) {
   int n = 0;
   // loop through all memory pages
   for (usize p = PGCEIL(memstart); p + PGSIZE <= memend; p += PGSIZE) {
-    // skip kernel memory and device tree memory
-    if (pgoverlaps(p, (usize)&kstart, (usize)&kend) ||
-        pgoverlaps(p, dtstart, dtend))
+    // skip kernel memory
+    if (pgoverlaps(p, (usize)&kstart, (usize)&kend))
       continue;
     pgfree((void *)p);
     n++;

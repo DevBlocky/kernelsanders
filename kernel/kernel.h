@@ -16,6 +16,8 @@ inline static __attribute__((noreturn)) void panic(const char *s) {
       :
       : "r"(s)
       : "a0");
+  // loop so compiler doesn't complain about noreturn
+  // (even though _panic has infinite loop)
   for (;;)
     ;
 }
@@ -23,16 +25,15 @@ inline static __attribute__((noreturn)) void panic(const char *s) {
 
 // util.c
 void memset(void *ptr, usize val, usize size);
-void memcpy(void *dst, void *src, usize size);
+void memcpy(void *dst, const void *src, usize size);
 usize strlen(const char *c);
 int strcmp(const char *a, const char *b);
 u32 be2cpu32(u32 be);
 u64 be2cpu64(u64 be);
 
 // devtree.c
-void dtsysinit(void *dtb);
+void dtsysinit(const u32 *dtb);
 void dtinit(void);
-void dtmem(usize *start, usize *end);
 usize dtgetmmio(const char *compat, void **addr);
 
 // printf.c
@@ -59,6 +60,7 @@ void *pgalloc(void);
 #define PTE_U (1 << 4)
 
 void kvminit(void);
+usize kvmpa(usize vaddr);
 void kvmmap(usize vaddr, usize paddr, usize size, int perm);
 void kvmunmap(usize vaddr, usize *paddr, usize size);
 void kvmuse(void);
@@ -68,9 +70,21 @@ void kallocinit(void);
 void *kmalloc(usize size);
 void kfree(void *ptr);
 void *krealloc(void *ptr, usize size);
+void *kmallocalign(usize size, usize align);
+void kfreealign(void *ptr);
 
 // trap.c
 void trapinit(void);
+
+// virtio_blk.c
+void vioblkinit(void);
+u16 vioblkbeginrw(u64 bufferpa, usize seg, BOOL write);
+int vioblkstatus(u16 handle);
+void vioblkintr(void);
+void vioblkwait(u16 *handles, int n);
+usize vioblkcap(void);
+u32 vioblkblksz(void);
+void vioblkrw(u8 *buf, usize start, usize count, BOOL write);
 
 // pci.c
 #define PCI_CMD_IOSPACE (1 << 0)
@@ -80,7 +94,7 @@ struct pci_iterator {
   u16 bus, slot, func;
 };
 
-struct __attribute((packed)) pci_device {
+struct pci_device {
   // each row = 32bits
   u16 vendor_id, device_id;
   u16 command, status;

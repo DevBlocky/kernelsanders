@@ -1,5 +1,7 @@
 #include "kernel.h"
 
+#define FDT_MAX_SIZE (2 * 1024 * 1024)
+
 #define FDT_MAGIC_IDX 0
 #define FDT_SIZE_IDX 1
 #define FDT_STRUCTOFF_IDX 2
@@ -8,16 +10,11 @@
 #define FDT_MAGIC 0xd00dfeed
 #define FDT_VERSION 17
 
-static u32 *devtree;
+static u32 devtree[FDT_MAX_SIZE / sizeof(u32)];
 
 static inline u32 dtgetprop(usize prop) { return be2cpu32(devtree[prop]); }
 static char *dtgetstring(u32 stroff) {
   return (char *)((usize)devtree + dtgetprop(FDT_STRINGOFF_IDX) + stroff);
-}
-
-void dtmem(usize *start, usize *end) {
-  *start = (usize)devtree;
-  *end = *start + dtgetprop(FDT_SIZE_IDX);
 }
 
 struct dtparsectx {
@@ -114,7 +111,7 @@ static usize usizecell(void *data, u32 cells) {
 
 usize dtgetmmio(const char *compat, void **addr) {
   struct dtparsectx iter;
-  struct dtparsetoken tok;
+  struct dtparsetoken tok = {0};
   BOOL match = FALSE;
   usize size = 0;
 
@@ -151,7 +148,12 @@ usize dtgetmmio(const char *compat, void **addr) {
   return 0;
 }
 
-void dtsysinit(void *dtb) { devtree = dtb; }
+void dtsysinit(const u32 *dtb) {
+  // copy the floating dtb into defined kernel memory
+  assert(be2cpu32(dtb[FDT_MAGIC_IDX]) == FDT_MAGIC);
+  u32 totalsz = be2cpu32(dtb[FDT_SIZE_IDX]);
+  memcpy(devtree, dtb, (usize)totalsz);
+}
 void dtinit(void) {
   // TODO: implement full device tree parsing
 }

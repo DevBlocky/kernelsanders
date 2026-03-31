@@ -8,13 +8,12 @@ _panic:
     csrw satp, zero
     sfence.vma zero, zero
 
+    // atomically swap panicking
+    li t0, 1
+    la t1, panicking
+    amoswap.w t0, t0, (t1)
     // spin core if already panicked
-    lw t0, panicking
     bnez t0, _spin
-    // set panicking to 1
-    la t0, panicking
-    li t1, 1
-    sw t1, 0(t0)
 
     // print panic msg
     csrr a5, stval

@@ -11,14 +11,16 @@ void memset(void *ptr, usize val, usize size) {
   for (usize i = 0; i < size % sizeof(usize); i++)
     *dst2++ = ((u8 *)&val)[i];
 }
-void memcpy(void *dst, void *src, usize size) {
+void memcpy(void *dst, const void *src, usize size) {
   // copy by cpu word size
-  usize *ldst = dst, *lsrc = src;
+  usize *ldst = (usize *)dst;
+  const usize *lsrc = (const usize *)src;
   for (usize i = 0; i < size / sizeof(usize); i++)
     *ldst++ = *lsrc++;
 
   // copy remaining bytes
-  u8 *sdst = (u8 *)ldst, *ssrc = (u8 *)lsrc;
+  u8 *sdst = (u8 *)ldst;
+  const u8 *ssrc = (const u8 *)lsrc;
   for (usize i = 0; i < size % sizeof(usize); i++)
     *sdst++ = *ssrc++;
 }

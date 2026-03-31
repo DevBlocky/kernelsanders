@@ -2,6 +2,7 @@
 #include "riscv.h"
 
 #define UART0_IRQ 0x0a
+#define VIRTIO_IRQ 0x01
 #define PCI_IRQ1 0x20
 #define PCI_IRQ2 0x21
 #define PCI_IRQ3 0x22
@@ -45,6 +46,7 @@ void trapinit(void) {
   w_sie(SIE_SEIE | SIE_SSIE);
   intr_on();
 
+  plic_intrset(VIRTIO_IRQ, 1);
   plic_intrset(UART0_IRQ, 1);
   plic_intrset(PCI_IRQ1, 1);
   plic_intrset(PCI_IRQ2, 1);
@@ -57,7 +59,10 @@ static void devintr(void) {
   int irq;
   while ((irq = plic_claim())) {
     switch (irq) {
-    case 0xa:
+    case VIRTIO_IRQ:
+      vioblkintr();
+      break;
+    case UART0_IRQ:
       uartintr();
       break;
     default:

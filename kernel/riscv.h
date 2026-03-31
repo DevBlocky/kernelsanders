@@ -22,6 +22,8 @@ extern nothing_t kend;
 
 #define UART0_MMIO 0x10000000UL
 
+#define VIRTIO_MMIO 0x10001000UL
+
 #define PCI_MMIO 0x30000000UL
 
 //
@@ -114,7 +116,10 @@ static inline usize r_scause() {
 static inline void w_satp(usize addr) {
   asm volatile("csrw satp, %0" : : "r"(addr));
 }
+
 static inline void sfence_vma() { asm volatile("sfence.vma zero, zero"); }
+static inline void fence() { asm volatile("fence"); }
+static inline void wfi(void) { asm volatile("wfi"); }
 
 static inline void intr_on() { w_sstatus(r_sstatus() | SSTATUS_SIE); }
 static inline void intr_off() { w_sstatus(r_sstatus() & ~SSTATUS_SIE); }

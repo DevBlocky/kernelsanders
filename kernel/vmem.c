@@ -1,8 +1,8 @@
 #include "kernel.h"
 #include "riscv.h"
 
-typedef u64 *pagetable_t;
 typedef u64 pte_t;
+typedef pte_t *pagetable_t;
 
 #define SATP_SV39 (8L << 60)
 
@@ -20,7 +20,7 @@ pagetable_t kpagetable;
 
 // find a leaf entry in a pagetable
 // if alloc == TRUE, allocate required pages
-pte_t *vmwalk(pagetable_t tbl, usize vaddr, BOOL alloc) {
+static pte_t *vmwalk(pagetable_t tbl, usize vaddr, BOOL alloc) {
   for (usize level = 2; level > 0; level--) {
     pte_t *pte = &tbl[va2idx(level, vaddr)];
     if (*pte & PTE_V) {
@@ -33,6 +33,14 @@ pte_t *vmwalk(pagetable_t tbl, usize vaddr, BOOL alloc) {
     }
   }
   return &tbl[va2idx(0, vaddr)];
+}
+
+// convert a virtual address into a physical address for kpagetable
+usize kvmpa(usize vaddr) {
+  pte_t *pte = vmwalk(kpagetable, vaddr, FALSE);
+  if (!pte || !(*pte & PTE_V))
+    panic("kvmpa: unmapped");
+  return pte2pa(*pte) | (vaddr & 0xfff);
 }
 
 // map a virtual address to a physical address in a pagetable
@@ -98,6 +106,8 @@ void kvminit(void) {
   kvmmap(PLIC_MMIO, PLIC_MMIO, 0x600000, PTE_R | PTE_W);
   // serial io
   kvmmap(UART0_MMIO, UART0_MMIO, PGSIZE, PTE_R | PTE_W);
+  // virtio mmio
+  kvmmap(VIRTIO_MMIO, VIRTIO_MMIO, 0x8000, PTE_R | PTE_W);
   // pci mmio config
   kvmmap(PCI_MMIO, PCI_MMIO, 0x10000, PTE_R | PTE_W);
   // vga fb and mmio

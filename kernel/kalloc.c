@@ -124,6 +124,14 @@ void *kmalloc(usize size) {
   return (void *)((usize)cur + METASIZE);
 }
 
+void *kmallocalign(usize size, usize align) {
+  void *raw = kmalloc(size + align - 1 + sizeof(void *));
+  void *ptr = (void *)(((usize)raw + sizeof(void *) + align - 1) & ~(align - 1));
+  ((void **)ptr)[-1] = raw;
+  return ptr;
+}
+void kfreealign(void *ptr) { kfree(((void **)ptr)[-1]); }
+
 static void freeblock(struct block *b) {
   struct block *find, *prev, **next;
   find = search(b, &prev);
@@ -172,20 +180,19 @@ void *krealloc(void *ptr, usize size) {
     return ptr;
   }
 
+  // find the block after this one in memory
   struct block *find = search(b, NULL);
   struct block **next = find ? &find->next : &freelist;
-  // find the block after this one in memory
   if (*next && adjacent(b, *next) && (*next)->size >= diff) {
-    // remove *next from freelist
+    // split off remainder if possible, then remove from freelist
     split(*next, diff);
+    b->size += (*next)->size;
     *next = (*next)->next;
-    // the block we removed is adjacent to b, so just increase b->size
-    b->size = newsz;
     return ptr;
   }
 
   // we've done everything we can, so now just allocate a new block and copy
-  void *dest = kmalloc(newsz);
+  void *dest = kmalloc(size);
   memcpy(dest, ptr, b->size - METASIZE);
   kfree(ptr);
   return dest;
